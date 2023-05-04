@@ -1,0 +1,23 @@
+
+<!-- <launch>
+    <arg name="mac_address" default="E0:D2:31:6B:74:3C" />
+    <arg name="conf_file_path" value="$(find sphero_mini)/config/sphero_conf.json"></arg>
+    <rosparam command="load" file="$(arg conf_file_path)" />
+    <param name="/sphero/mac_address" value="$(arg mac_address)" />
+    <group ns="sphero">
+          <node pkg="sphero_mini" name="sphero" type="sphero_main.py" output="screen"/>
+    </group>
+</launch> -->
+
+
+<launch>
+    <arg name="mac_address" default="E0:D2:31:6B:74:3C" />
+    <arg name="conf_file_path" default="$(find sphero_mini)/config/sphero_conf.json"></arg>
+    <rosparam command="load" file="$(arg conf_file_path)" />
+    <param name="/sphero/mac_address" value="$(arg mac_address)" />
+    <group ns="sphero">
+          <node pkg="sphero_mini" name="sphero" type="sphero_main.py" output="screen"/>
+            <param name="conf_file_path" value="$(arg conf_file_path)" />"
+          <node pkg="sphero_mini" type="controller_with_sliders.py" name="sphero_controller"/>
+    </group>
+</launch>
