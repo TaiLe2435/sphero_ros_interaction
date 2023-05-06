@@ -19,5 +19,7 @@
           <node pkg="sphero_mini" name="sphero" type="sphero_main.py" output="screen"/>
             <param name="conf_file_path" value="$(arg conf_file_path)" />"
           <node pkg="sphero_mini" type="controller_with_sliders.py" name="sphero_controller"/>
+          <node pkg="sphero_mini" type="tracker.py" name="sphero_tracker" required='true' />
     </group>
+    <include file="$(find usb_cam)/launch/usb_cam-test.launch" />
 </launch>

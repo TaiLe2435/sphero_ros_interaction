@@ -4,7 +4,7 @@ import json
 import rospy
 from sensor_msgs.msg import Imu
 from geometry_msgs.msg import Quaternion, Vector3
-from std_msgs.msg import Int64, String
+from std_msgs.msg import Int64, String, Bool
 from box import Box
 import numpy as np
 
@@ -15,6 +15,7 @@ from sphero_mini.core import SpheroMini
 # distance = 0
 # global heading, move, distance
 move = 0
+auto = 0
 
 last_sent_yaw = None
 last_heading = 0
@@ -116,21 +117,24 @@ def yaw_callback(yaw):
     global last_sent_yaw
     global move
     global velocity
+    global auto
     heading = yaw.data
 
-    if heading < 0:
-        heading = 360 + heading
+    rospy.loginfo(auto)
+    if auto == True:
+        if heading < 0:
+            heading = 360 + heading
 
-    if move == 1:  
-        # if heading != last_sent_yaw:
-        sphero.roll(velocity, heading)
-        # sphero.wait(0.2)
-        # rospy.loginfo(heading)
-        last_sent_yaw = heading
-    elif move == 0:
-        # sphero.roll(0,heading)
-        # sphero.wait(1)
-        rospy.loginfo("Not Moving")
+        if move == 1:  
+            # if heading != last_sent_yaw:
+            sphero.roll(velocity, heading)
+            # sphero.wait(0.2)
+            # rospy.loginfo(heading)
+            last_sent_yaw = heading
+        elif move == 0:
+            # sphero.roll(0,heading)
+            # sphero.wait(1)
+            rospy.loginfo("Not Moving")
     
 
 def dist_callback(dist):
@@ -152,56 +156,60 @@ def move_flag_callback(flag):
 def velocity_callback(vel):
     global velocity
     velocity = vel.data
-    rospy.loginfo(velocity)
+    # rospy.loginfo(velocity)
 
 def dpad_callback(dir):
     global command
     global last_heading
+    global auto
     command = dir.data
-    if command == "Up":
-        sphero.roll(100, 0)
-        sphero.wait(0.2)
-        sphero.roll(0, 0)
-        last_heading = 0
-        # rospy.loginfo("Up")
-    elif command == "Down":
-        sphero.roll(100, 180)
-        sphero.wait(0.2)
-        sphero.roll(0, 180)
-        last_heading = 180
-        # rospy.loginfo("Down")
-    elif command == "Left":
-        sphero.roll(100, 270)
-        sphero.wait(0.2)
-        sphero.roll(0, 270)
-        last_heading = 270
-        # rospy.loginfo("Left")
-    elif command == "Right":
-        sphero.roll(100, 90)
-        sphero.wait(0.2)
-        sphero.roll(0, 90)
-        last_heading = 90
-        # rospy.loginfo("Right")
-    elif command == "None":
-        sphero.roll(0, last_heading)
-        sphero.wait(0.2)
-        # rospy.loginfo("stopped")
+    if auto == False:
+        if command == "Up":
+            sphero.roll(100, 0)
+            sphero.wait(0.2)
+            sphero.roll(0, 0)
+            last_heading = 0
+            # rospy.loginfo("Up")
+        elif command == "Down":
+            sphero.roll(100, 180)
+            sphero.wait(0.2)
+            sphero.roll(0, 180)
+            last_heading = 180
+            # rospy.loginfo("Down")
+        elif command == "Left":
+            sphero.roll(100, 270)
+            sphero.wait(0.2)
+            sphero.roll(0, 270)
+            last_heading = 270
+            # rospy.loginfo("Left")
+        elif command == "Right":
+            sphero.roll(100, 90)
+            sphero.wait(0.2)
+            sphero.roll(0, 90)
+            last_heading = 90
+            # rospy.loginfo("Right")
+        elif command == "None":
+            sphero.roll(0, last_heading)
+            sphero.wait(0.2)
+            # rospy.loginfo("stopped")
     
 def joystick_callback(dat):
     global velocity
     global heading
     global last_vel
+    global auto
     temp = dat
     velocity = int(temp.x)
     heading = int(temp.y)
 
-    if heading < 0:
-        heading = 360 + heading
-    
-    if velocity >= last_vel + 8 or velocity <= last_vel - 8:
-        sphero.roll(velocity, heading)
-    last_vel = velocity
-    # sphero.wait(0.2)
+    if auto == False:
+        if heading < 0:
+            heading = 360 + heading
+        
+        if velocity >= last_vel + 8 or velocity <= last_vel - 8:
+            sphero.roll(velocity, heading)
+        last_vel = velocity
+        # sphero.wait(0.2)
     # sphero.roll(0, heading)
     # rospy.loginfo("joystick: ", velocity, ", ", heading)
 
@@ -210,6 +218,10 @@ def slider_callback(rgb):
     g = int(rgb.y)
     b = int(rgb.z)
     sphero.setLEDColor(red = r, green = g, blue = b)
+
+def autonomy_callback(bool):
+    global auto 
+    auto = bool.data
 
 def main(sphero):
     global heading
@@ -229,6 +241,7 @@ def main(sphero):
     rospy.Subscriber('/GUI/dpad', String, dpad_callback, queue_size=None)
     rospy.Subscriber('/GUI/joystick', Vector3, joystick_callback, queue_size=None)
     rospy.Subscriber('/GUI/slider', Vector3, slider_callback, queue_size=None)
+    rospy.Subscriber('/GUI/autonomy', Bool, autonomy_callback, queue_size=None)
 
     # if move == 1:
     #     # if heading != last_sent_yaw:
@@ -290,10 +303,12 @@ if __name__ == "__main__": # test movements without sensor data first
     sphero = connect()     # especially the interactive motion
     try:
         initSphero(sphero)
+        auto = False
         move = 1
         while(1):
-            while move == 1:
+            while move == 1 or auto == False:
                 main(sphero)
+
         # sphero.roll(50, 0)
         # sphero.wait(3)
         # sphero.roll(50, 0)

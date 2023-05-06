@@ -100,14 +100,14 @@ def image_callback(ros_image):
             red_center = [xC, yC]
             # print(center)
             
-            # plotting bounding box and center
-            img = cv2.rectangle(img, (x, y),
-                                    (x + w, y + h),
-                                    (0, 0, 255), 2)
-            cv2.circle(img, red_center, 10, (0, 0, 255), -1)
-            cv2.putText(img, "Target", (x, y),
-                        cv2.FONT_HERSHEY_SIMPLEX, 1.0,
-                        (0, 0, 255))
+            # # plotting bounding box and center
+            # img = cv2.rectangle(img, (x, y),
+            #                         (x + w, y + h),
+            #                         (0, 0, 255), 2)
+            # cv2.circle(img, red_center, 10, (0, 0, 255), -1)
+            # cv2.putText(img, "Target", (x, y),
+            #             cv2.FONT_HERSHEY_SIMPLEX, 1.0,
+            #             (0, 0, 255))
 
     # tracking blue color
   contours, hierarchy=cv2.findContours(blue_mask,cv2.RETR_EXTERNAL ,cv2.CHAIN_APPROX_TC89_L1)
@@ -124,14 +124,14 @@ def image_callback(ros_image):
             blue_center = [xC, yC]
             # print(center)
             
-            # plotting bounding box and center
-            img = cv2.rectangle(img, (x, y),
-                                    (x + w, y + h),
-                                    (255, 0, 0), 2)
-            cv2.circle(img, blue_center, 10, (255, 0, 0), -1)
-            cv2.putText(img, "Robot", (x, y),
-                        cv2.FONT_HERSHEY_SIMPLEX, 1.0,
-                        (255, 0, 0))
+            # # plotting bounding box and center
+            # img = cv2.rectangle(img, (x, y),
+            #                         (x + w, y + h),
+            #                         (255, 0, 0), 2)
+            # cv2.circle(img, blue_center, 10, (255, 0, 0), -1)
+            # cv2.putText(img, "Robot", (x, y),
+            #             cv2.FONT_HERSHEY_SIMPLEX, 1.0,
+            #             (255, 0, 0))
 
   out.write(img)
 

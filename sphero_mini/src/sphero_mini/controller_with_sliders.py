@@ -3,7 +3,7 @@
 import tkinter as tk
 import math
 import rospy
-from std_msgs.msg import String
+from std_msgs.msg import String, Bool
 from geometry_msgs.msg import Vector3
 import numpy as np
 
@@ -35,7 +35,34 @@ class JoystickGUI(tk.Frame):
         self.sliders = ColorSelector(self)
         self.sliders.pack()
 
+        # Create button widgets
+        self.buttons = Button(self)
+        self.buttons.pack()
 
+
+class Button(tk.Canvas):
+    def __init__(self, master=None, size=100, *args, **kwargs):
+        super().__init__(master, width=size, height=size, *args, **kwargs)
+        self.size = size
+        self.center = size/2
+        self.autoButton_pub = rospy.Publisher('/GUI/autonomy', Bool, queue_size=1)
+        self.autoButton_message = Bool()
+
+        # Create the button 1
+        self.button1 = tk.Button(self, text='Tracking', command=self.autonomy, fg='black', bg='white')
+        self.button1.pack(side="left", padx=10, pady=10)
+
+        # Create the button 2
+        self.button2 = tk.Button(self, text='Teleoperation', command=self.nAutonomy, fg='black', bg='white')
+        self.button2.pack(side="right", padx=10, pady=10)
+
+    def autonomy(self):
+        self.autoButton_message = True
+        self.autoButton_pub.publish(self.autoButton_message)
+
+    def nAutonomy(self):
+        self.autoButton_message = False
+        self.autoButton_pub.publish(self.autoButton_message)
 
 class Joystick(tk.Canvas):
     def __init__(self, master=None, size=100, *args, **kwargs):
@@ -202,7 +229,7 @@ class ColorSelector(tk.Canvas):
         self.slider_pub = rospy.Publisher('/GUI/slider', Vector3, queue_size=1)
         self.slider_message = Vector3()
         # Run main loop
-        self.root.mainloop()
+        # self.root.mainloop()
 
     def update_color(self, val):
         # Update color based on slider values
@@ -221,7 +248,7 @@ def main():
     rospy.init_node('GUI', anonymous=True, log_level=rospy.DEBUG)   
     rate = rospy.Rate(1)  # 10 Hz
     root = tk.Tk()
-    root.geometry("800x400")
+    root.geometry("800x800")
     app = JoystickGUI(master=root)
     app.mainloop()
 
